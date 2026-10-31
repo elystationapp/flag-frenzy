@@ -1,0 +1,207 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+<title>Flag Frenzy</title>
+<style>
+:root{--bg:#1a0f5e;--bg2:#2d1b9c;--y:#ffd400;--p:#ff2e88;--c:#00d2ff;--g:#2fe27a;--r:#ff4040;--w:#fff;--f:"Arial Black","Trebuchet MS",system-ui,sans-serif}
+*{box-sizing:border-box;margin:0;-webkit-tap-highlight-color:transparent}
+html,body{height:100%}
+body{font-family:var(--f);color:var(--w);background:repeating-conic-gradient(from 0deg at 50% 30%,var(--bg) 0 10deg,var(--bg2) 10deg 20deg);background-attachment:fixed;overflow-x:hidden;padding:env(safe-area-inset-top) 0 env(safe-area-inset-bottom)}
+.scr{display:none;max-width:560px;margin:0 auto;padding:16px;min-height:100%}
+.scr.on{display:block}
+h1{font-size:clamp(2.3rem,12vw,3.6rem);line-height:.95;text-align:center;color:var(--y);text-shadow:0 4px 0 var(--p),0 8px 0 rgba(0,0,0,.35);transform:rotate(-2deg);margin:18px 0 8px;letter-spacing:-1px}
+.strip{font-size:2rem;text-align:center;white-space:nowrap;overflow:hidden;margin-bottom:14px}
+.strip div{display:inline-block;animation:sl 26s linear infinite}
+@keyframes sl{to{transform:translateX(-50%)}}
+.card{background:rgba(0,0,0,.28);border:3px solid rgba(255,255,255,.25);border-radius:20px;padding:14px;margin:12px 0}
+.card h3{font-size:.95rem;margin-bottom:10px;color:var(--c)}
+.btn{display:block;width:100%;border:0;border-radius:16px;padding:16px;font:inherit;font-size:1.1rem;color:#1a0f5e;background:var(--y);box-shadow:0 6px 0 #b08f00;cursor:pointer;margin:10px 0;text-align:left;transition:transform .08s}
+.btn:active{transform:translateY(5px);box-shadow:0 1px 0 #b08f00}
+.btn small{display:block;font-size:.72rem;opacity:.7;font-family:system-ui,sans-serif;font-weight:600}
+.btn.p{background:var(--p);color:#fff;box-shadow:0 6px 0 #a3125a}.btn.c{background:var(--c);box-shadow:0 6px 0 #0088a8}.btn.g{background:var(--g);box-shadow:0 6px 0 #14934b}
+.btn.sm{display:inline-block;width:auto;padding:10px 16px;font-size:.9rem;margin:4px}
+.chips{display:flex;flex-wrap:wrap;gap:8px}
+.chip{border:3px solid rgba(255,255,255,.4);background:transparent;color:#fff;border-radius:99px;padding:8px 12px;font:inherit;font-size:.78rem;cursor:pointer}
+.chip.on{background:var(--c);color:#1a0f5e;border-color:var(--c)}
+.bar{height:16px;border-radius:9px;background:rgba(0,0,0,.4);overflow:hidden}
+.bar i{display:block;height:100%;background:linear-gradient(90deg,var(--g),var(--y));width:0;transition:width .4s}
+.hud{display:flex;justify-content:space-between;align-items:center;gap:8px;font-size:1.05rem}
+.hud .mult{background:var(--p);padding:4px 12px;border-radius:99px;transform:rotate(-3deg)}
+.hud .hearts{letter-spacing:2px}
+.q{text-align:center;margin:14px 0}
+.flag{font-size:clamp(6rem,34vw,10rem);line-height:1.1;font-family:"Apple Color Emoji","Segoe UI Emoji","Noto Color Emoji",sans-serif;filter:drop-shadow(0 8px 0 rgba(0,0,0,.3))}
+.prompt{font-size:1.1rem;color:var(--y)}
+.cname{font-size:1.8rem;margin-top:4px}
+.opts{display:grid;gap:10px}
+.opt{border:0;border-radius:16px;padding:16px 12px;font:inherit;font-size:1.05rem;color:#fff;cursor:pointer;box-shadow:0 6px 0 rgba(0,0,0,.35);min-height:60px}
+.opt:nth-child(1){background:#e8267a}.opt:nth-child(2){background:#1e7cff}.opt:nth-child(3){background:#ff8a00}.opt:nth-child(4){background:#8a3dff}
+.opt:active{transform:translateY(4px)}
+.opt.ok{background:var(--g)!important;color:#0b3d1f;animation:pop .35s}.opt.no{background:var(--r)!important;animation:shk .35s}.opt:disabled{opacity:.55}.opt.ok:disabled{opacity:1}
+@keyframes pop{50%{transform:scale(1.07)}}@keyframes shk{25%{transform:translateX(-8px)}75%{transform:translateX(8px)}}
+.typebox{display:flex;gap:8px}
+.typebox input{flex:1;min-width:0;border:3px solid var(--c);border-radius:14px;padding:14px;font:inherit;font-size:1.1rem;background:#fff;color:#1a0f5e}
+.msg{min-height:28px;text-align:center;margin-top:10px;font-size:1.05rem}
+.fl{position:fixed;pointer-events:none;font-size:2rem;color:var(--y);text-shadow:0 3px 0 #000;animation:up .9s forwards;z-index:9}
+@keyframes up{to{transform:translateY(-90px);opacity:0}}
+.tiles{display:grid;grid-template-columns:repeat(auto-fill,minmax(42px,1fr));gap:5px}
+.tile{aspect-ratio:1;border-radius:9px;display:flex;align-items:center;justify-content:center;font-size:1.5rem;background:rgba(255,255,255,.12);border:2px solid transparent;cursor:pointer;font-family:"Apple Color Emoji","Segoe UI Emoji","Noto Color Emoji",sans-serif;opacity:.4}
+.tile.l{opacity:.8;border-color:var(--y)}.tile.m{opacity:1;border-color:var(--g);background:rgba(47,226,122,.3)}
+#mapName{position:sticky;bottom:8px;text-align:center;background:var(--y);color:#1a0f5e;border-radius:12px;padding:10px;margin-top:10px;min-height:42px}
+.big{font-size:4rem;color:var(--y);text-align:center;text-shadow:0 4px 0 var(--p)}
+.row{display:flex;justify-content:space-between;padding:8px 0;border-bottom:2px dashed rgba(255,255,255,.2)}
+.miss{display:flex;flex-wrap:wrap;gap:6px;font-size:.8rem}
+.miss span{background:rgba(0,0,0,.3);padding:6px 10px;border-radius:99px}
+canvas#cf{position:fixed;inset:0;pointer-events:none;z-index:20}
+#mute{position:fixed;top:calc(8px + env(safe-area-inset-top));right:10px;z-index:30;background:rgba(0,0,0,.4);border:0;color:#fff;border-radius:50%;width:42px;height:42px;font-size:1.2rem;cursor:pointer}
+:focus-visible{outline:3px solid #fff;outline-offset:2px}
+@media(prefers-reduced-motion:reduce){.strip div{animation:none}}
+</style>
+</head>
+<body>
+<button id="mute" aria-label="Toggle sound">🔊</button>
+<canvas id="cf"></canvas>
+
+<section class="scr on" id="home">
+  <h1>FLAG<br>FRENZY!</h1>
+  <div class="strip"><div id="strip"></div></div>
+  <button class="btn p" data-mode="daily">⭐ Daily Challenge<small id="dailyInfo">10 questions, same for everyone today</small></button>
+  <button class="btn" data-mode="flag">🏳️ Name the Flag<small>4 choices, 3 lives</small></button>
+  <button class="btn c" data-mode="cap">🏛️ Capital Quest<small>Pick the right capital</small></button>
+  <button class="btn g" data-mode="type">⌨️ Type It<small>Spelling doesn't have to be perfect</small></button>
+  <button class="btn p" data-mode="blitz">⚡ 60-Second Blitz<small>As many as you can, beat the clock</small></button>
+  <div class="card"><h3>CONTINENTS (for solo modes)</h3><div class="chips" id="chips"></div></div>
+  <div class="card"><h3>COUNTRIES MASTERED</h3><div class="bar"><i id="mbar"></i></div><div class="row" style="border:0"><span id="mtxt"></span><button class="btn sm c" id="toMap">Progress map</button></div></div>
+</section>
+
+<section class="scr" id="game">
+  <div class="hud"><button class="btn sm" id="quit" style="box-shadow:none">✕</button><span id="score">0</span><span class="mult" id="mult">x1</span><span class="hearts" id="hearts"></span></div>
+  <div class="bar" style="margin-top:8px"><i id="gbar"></i></div>
+  <div class="q"><div class="prompt" id="prompt"></div><div class="flag" id="flag"></div><div class="cname" id="cname"></div></div>
+  <div class="opts" id="opts"></div>
+  <form class="typebox" id="typeForm" style="display:none"><input id="ans" autocomplete="off" autocapitalize="off" spellcheck="false" placeholder="Country name"><button class="btn sm p" style="margin:0">GO</button></form>
+  <div class="msg" id="msg"></div>
+  <button class="btn sm c" id="skip" style="display:none">I don't know</button>
+</section>
+
+<section class="scr" id="end">
+  <h1 id="endT">GAME OVER</h1>
+  <div class="big" id="endS">0</div>
+  <div class="card" id="endStats"></div>
+  <div class="card"><h3>STUDY THESE (they'll come back more often)</h3><div class="miss" id="endMiss"></div></div>
+  <button class="btn" id="again">Play again</button>
+  <button class="btn c" id="endHome">Home</button>
+</section>
+
+<section class="scr" id="map">
+  <h1 style="font-size:2rem">PROGRESS MAP</h1>
+  <p style="text-align:center;font-size:.8rem;font-family:system-ui;margin-bottom:6px">Green = mastered · Yellow = learning · Faded = not yet seen</p>
+  <div id="mapBody"></div><div id="mapName">Tap a flag</div>
+  <button class="btn" id="mapHome" style="margin-top:12px">Back</button>
+</section>
+
+<script>
+const RAW={AF:`DZ;Algeria;Algiers|AO;Angola;Luanda|BJ;Benin;Porto-Novo|BW;Botswana;Gaborone|BF;Burkina Faso;Ouagadougou|BI;Burundi;Gitega|CV;Cape Verde;Praia|CM;Cameroon;Yaoundé|CF;Central African Republic;Bangui|TD;Chad;N'Djamena|KM;Comoros;Moroni|CG;Republic of the Congo;Brazzaville|CD;DR Congo;Kinshasa|CI;Ivory Coast;Yamoussoukro|DJ;Djibouti;Djibouti|EG;Egypt;Cairo|GQ;Equatorial Guinea;Malabo|ER;Eritrea;Asmara|SZ;Eswatini;Mbabane|ET;Ethiopia;Addis Ababa|GA;Gabon;Libreville|GM;Gambia;Banjul|GH;Ghana;Accra|GN;Guinea;Conakry|GW;Guinea-Bissau;Bissau|KE;Kenya;Nairobi|LS;Lesotho;Maseru|LR;Liberia;Monrovia|LY;Libya;Tripoli|MG;Madagascar;Antananarivo|MW;Malawi;Lilongwe|ML;Mali;Bamako|MR;Mauritania;Nouakchott|MU;Mauritius;Port Louis|MA;Morocco;Rabat|MZ;Mozambique;Maputo|NA;Namibia;Windhoek|NE;Niger;Niamey|NG;Nigeria;Abuja|RW;Rwanda;Kigali|ST;São Tomé and Príncipe;São Tomé|SN;Senegal;Dakar|SC;Seychelles;Victoria|SL;Sierra Leone;Freetown|SO;Somalia;Mogadishu|ZA;South Africa;Pretoria|SS;South Sudan;Juba|SD;Sudan;Khartoum|TZ;Tanzania;Dodoma|TG;Togo;Lomé|TN;Tunisia;Tunis|UG;Uganda;Kampala|ZM;Zambia;Lusaka|ZW;Zimbabwe;Harare`,
+AS:`AF;Afghanistan;Kabul|AM;Armenia;Yerevan|AZ;Azerbaijan;Baku|BH;Bahrain;Manama|BD;Bangladesh;Dhaka|BT;Bhutan;Thimphu|BN;Brunei;Bandar Seri Begawan|KH;Cambodia;Phnom Penh|CN;China;Beijing|CY;Cyprus;Nicosia|GE;Georgia;Tbilisi|IN;India;New Delhi|ID;Indonesia;Jakarta|IR;Iran;Tehran|IQ;Iraq;Baghdad|IL;Israel;Jerusalem|JP;Japan;Tokyo|JO;Jordan;Amman|KZ;Kazakhstan;Astana|KW;Kuwait;Kuwait City|KG;Kyrgyzstan;Bishkek|LA;Laos;Vientiane|LB;Lebanon;Beirut|MY;Malaysia;Kuala Lumpur|MV;Maldives;Malé|MN;Mongolia;Ulaanbaatar|MM;Myanmar;Naypyidaw|NP;Nepal;Kathmandu|KP;North Korea;Pyongyang|OM;Oman;Muscat|PK;Pakistan;Islamabad|PS;Palestine;Ramallah|PH;Philippines;Manila|QA;Qatar;Doha|SA;Saudi Arabia;Riyadh|SG;Singapore;Singapore|KR;South Korea;Seoul|LK;Sri Lanka;Sri Jayawardenepura Kotte|SY;Syria;Damascus|TJ;Tajikistan;Dushanbe|TH;Thailand;Bangkok|TL;Timor-Leste;Dili|TR;Turkey;Ankara|TM;Turkmenistan;Ashgabat|AE;United Arab Emirates;Abu Dhabi|UZ;Uzbekistan;Tashkent|VN;Vietnam;Hanoi|YE;Yemen;Sana'a`,
+EU:`AL;Albania;Tirana|AD;Andorra;Andorra la Vella|AT;Austria;Vienna|BY;Belarus;Minsk|BE;Belgium;Brussels|BA;Bosnia and Herzegovina;Sarajevo|BG;Bulgaria;Sofia|HR;Croatia;Zagreb|CZ;Czechia;Prague|DK;Denmark;Copenhagen|EE;Estonia;Tallinn|FI;Finland;Helsinki|FR;France;Paris|DE;Germany;Berlin|GR;Greece;Athens|HU;Hungary;Budapest|IS;Iceland;Reykjavik|IE;Ireland;Dublin|IT;Italy;Rome|LV;Latvia;Riga|LI;Liechtenstein;Vaduz|LT;Lithuania;Vilnius|LU;Luxembourg;Luxembourg|MT;Malta;Valletta|MD;Moldova;Chișinău|MC;Monaco;Monaco|ME;Montenegro;Podgorica|NL;Netherlands;Amsterdam|MK;North Macedonia;Skopje|NO;Norway;Oslo|PL;Poland;Warsaw|PT;Portugal;Lisbon|RO;Romania;Bucharest|RU;Russia;Moscow|SM;San Marino;San Marino|RS;Serbia;Belgrade|SK;Slovakia;Bratislava|SI;Slovenia;Ljubljana|ES;Spain;Madrid|SE;Sweden;Stockholm|CH;Switzerland;Bern|UA;Ukraine;Kyiv|GB;United Kingdom;London|VA;Vatican City;Vatican City`,
+NA:`AG;Antigua and Barbuda;Saint John's|BS;Bahamas;Nassau|BB;Barbados;Bridgetown|BZ;Belize;Belmopan|CA;Canada;Ottawa|CR;Costa Rica;San José|CU;Cuba;Havana|DM;Dominica;Roseau|DO;Dominican Republic;Santo Domingo|SV;El Salvador;San Salvador|GD;Grenada;St. George's|GT;Guatemala;Guatemala City|HT;Haiti;Port-au-Prince|HN;Honduras;Tegucigalpa|JM;Jamaica;Kingston|MX;Mexico;Mexico City|NI;Nicaragua;Managua|PA;Panama;Panama City|KN;Saint Kitts and Nevis;Basseterre|LC;Saint Lucia;Castries|VC;Saint Vincent and the Grenadines;Kingstown|TT;Trinidad and Tobago;Port of Spain|US;United States;Washington, D.C.`,
+SA:`AR;Argentina;Buenos Aires|BO;Bolivia;Sucre|BR;Brazil;Brasília|CL;Chile;Santiago|CO;Colombia;Bogotá|EC;Ecuador;Quito|GY;Guyana;Georgetown|PY;Paraguay;Asunción|PE;Peru;Lima|SR;Suriname;Paramaribo|UY;Uruguay;Montevideo|VE;Venezuela;Caracas`,
+OC:`AU;Australia;Canberra|FJ;Fiji;Suva|KI;Kiribati;Tarawa|MH;Marshall Islands;Majuro|FM;Micronesia;Palikir|NR;Nauru;Yaren|NZ;New Zealand;Wellington|PW;Palau;Ngerulmud|PG;Papua New Guinea;Port Moresby|WS;Samoa;Apia|SB;Solomon Islands;Honiara|TO;Tonga;Nuku'alofa|TV;Tuvalu;Funafuti|VU;Vanuatu;Port Vila`};
+const CN={AF:'Africa',AS:'Asia',EU:'Europe',NA:'N. America',SA:'S. America',OC:'Oceania'};
+const ALIAS={US:['usa','america','united states of america'],GB:['uk','britain','great britain','england'],AE:['uae','emirates'],CD:['drc','congo kinshasa','democratic republic of the congo'],CG:['congo','congo brazzaville'],CI:['cote divoire','cote d ivoire'],CZ:['czech republic'],SZ:['swaziland'],MM:['burma'],NL:['holland'],MK:['macedonia'],TL:['east timor'],CV:['cabo verde'],KR:['korea','republic of korea'],KP:['dprk'],VA:['vatican','holy see'],TR:['turkiye'],BS:['the bahamas'],GM:['the gambia'],ST:['sao tome','sao tome and principe']};
+const flagOf=cc=>String.fromCodePoint(...[...cc].map(c=>127397+c.charCodeAt(0)));
+const C=[];for(const k in RAW)RAW[k].split('|').forEach(s=>{const [cc,name,cap]=s.split(';');C.push({cc,name,cap,k,f:flagOf(cc)})});
+const BY=Object.fromEntries(C.map(c=>[c.cc,c]));
+const $=id=>document.getElementById(id);
+let S=JSON.parse(localStorage.getItem('ff-s')||'{}');S.p=S.p||{};S.hi=S.hi||{};S.mute=!!S.mute;S.conts=S.conts||Object.keys(CN);
+const save=()=>localStorage.setItem('ff-s',JSON.stringify(S));
+const norm=s=>s.toLowerCase().normalize('NFD').replace(/[\u0300-\u036f]/g,'').replace(/[^a-z0-9 ]/g,' ').replace(/\bthe\b/g,' ').replace(/\s+/g,' ').trim();
+function lev(a,b){const d=Array.from({length:a.length+1},(_,i)=>[i]);for(let j=1;j<=b.length;j++)d[0][j]=j;for(let i=1;i<=a.length;i++)for(let j=1;j<=b.length;j++)d[i][j]=Math.min(d[i-1][j]+1,d[i][j-1]+1,d[i-1][j-1]+(a[i-1]==b[j-1]?0:1));return d[a.length][b.length]}
+function judge(inp,c){const x=norm(inp);if(!x)return 0;const names=[norm(c.name),...(ALIAS[c.cc]||[]).map(norm)];if(names.includes(x))return 2;
+  for(const n of names){const al=n.length<5?0:n.length<9?1:2;if(al&&lev(x,n)<=al)return 1}return 0}
+// ---------- audio / confetti
+let ac;function tone(f,d,t='square',v=.12,when=0){if(S.mute)return;try{ac=ac||new(window.AudioContext||window.webkitAudioContext)();const o=ac.createOscillator(),g=ac.createGain(),n=ac.currentTime+when;o.type=t;o.frequency.setValueAtTime(f,n);g.gain.setValueAtTime(v,n);g.gain.exponentialRampToValueAtTime(.001,n+d);o.connect(g);g.connect(ac.destination);o.start(n);o.stop(n+d)}catch(e){}}
+const sOk=m=>[523,659,784,1047].slice(0,Math.min(4,1+Math.floor(m))).forEach((f,i)=>tone(f,.15,'triangle',.18,i*.07));
+const sNo=()=>{tone(180,.3,'sawtooth',.15);tone(130,.35,'sawtooth',.15,.1)};
+const sWin=()=>[523,659,784,1047,1319,1568].forEach((f,i)=>tone(f,.25,'triangle',.18,i*.09));
+const cv=$('cf'),cx=cv.getContext('2d');let parts=[],run=false;
+function rs(){cv.width=innerWidth;cv.height=innerHeight}rs();addEventListener('resize',rs);
+function confetti(n=90){if(matchMedia('(prefers-reduced-motion:reduce)').matches)return;const cols=['#ffd400','#ff2e88','#00d2ff','#2fe27a','#fff','#ff8a00'];
+  for(let i=0;i<n;i++)parts.push({x:innerWidth/2,y:innerHeight*.4,vx:(Math.random()-.5)*16,vy:-Math.random()*14-4,s:Math.random()*8+4,c:cols[i%6],r:Math.random()*6,vr:(Math.random()-.5)*.4,l:100});
+  if(!run){run=true;requestAnimationFrame(cf)}}
+function cf(){cx.clearRect(0,0,cv.width,cv.height);parts=parts.filter(p=>p.l>0);parts.forEach(p=>{p.vy+=.35;p.x+=p.vx;p.y+=p.vy;p.r+=p.vr;p.l--;cx.save();cx.translate(p.x,p.y);cx.rotate(p.r);cx.fillStyle=p.c;cx.fillRect(-p.s/2,-p.s/4,p.s,p.s/2);cx.restore()});parts.length?requestAnimationFrame(cf):(run=false)}
+// ---------- rng / helpers
+function mb(a){return()=>{a|=0;a=a+0x6D2B79F5|0;let t=Math.imul(a^a>>>15,1|a);t=t+Math.imul(t^t>>>7,61|t)^t;return((t^t>>>14)>>>0)/4294967296}}
+const hash=s=>{let h=2166136261;for(const ch of s){h^=ch.charCodeAt(0);h=Math.imul(h,16777619)}return h>>>0};
+const today=()=>new Date().toISOString().slice(0,10);
+const mastered=cc=>(S.p[cc]?.b||0)>=4;
+function weight(c){const p=S.p[c.cc];if(!p)return 4;return[8,5,3,2,1,.6][p.b]}
+function pick(pool,rnd,avoid=[]){const ps=pool.filter(c=>!avoid.includes(c.cc));const ws=ps.map(weight);let r=rnd()*ws.reduce((a,b)=>a+b,0);for(let i=0;i<ps.length;i++){r-=ws[i];if(r<=0)return ps[i]}return ps[0]}
+function makeQ(c,type,rnd,pool){let opts=[];if(type!=='type'){const same=C.filter(x=>x.k===c.k&&x.cc!==c.cc),any=C.filter(x=>x.cc!==c.cc);const used=new Set([type==='cap'?c.cap:c.name]);
+  let g=0;while(opts.length<3&&g++<200){const src=rnd()<.6?same:any,d=src[Math.floor(rnd()*src.length)];const key=type==='cap'?d.cap:d.name;if(!used.has(key)){used.add(key);opts.push(d)}}
+  opts.push(c);for(let i=opts.length-1;i>0;i--){const j=Math.floor(rnd()*(i+1));[opts[i],opts[j]]=[opts[j],opts[i]]}}
+  return{c,type,opts}}
+// ---------- UI
+function show(id){document.querySelectorAll('.scr').forEach(s=>s.classList.toggle('on',s.id===id));scrollTo(0,0)}
+function home(){
+  $('strip').textContent=[...C].sort(()=>Math.random()-.5).slice(0,40).map(c=>c.f).join(' ').repeat(2);
+  $('chips').innerHTML=Object.entries(CN).map(([k,v])=>`<button class="chip ${S.conts.includes(k)?'on':''}" data-k="${k}">${v}</button>`).join('');
+  const m=C.filter(c=>mastered(c.cc)).length;$('mbar').style.width=m/C.length*100+'%';$('mtxt').textContent=`${m} / ${C.length}`;
+  $('dailyInfo').textContent=S.daily?.date===today()?`Today's best: ${S.daily.score} pts. Replay anytime!`:'10 questions, same for everyone today';
+  show('home')}
+$('chips').onclick=e=>{const k=e.target.dataset.k;if(!k)return;const i=S.conts.indexOf(k);if(i>-1){if(S.conts.length>1)S.conts.splice(i,1)}else S.conts.push(k);save();e.target.classList.toggle('on',S.conts.includes(k))};
+document.querySelectorAll('[data-mode]').forEach(b=>b.onclick=()=>start(b.dataset.mode));
+$('mute').onclick=()=>{S.mute=!S.mute;save();$('mute').textContent=S.mute?'🔇':'🔊'};$('mute').textContent=S.mute?'🔇':'🔊';
+$('toMap').onclick=()=>{
+  $('mapBody').innerHTML=Object.entries(CN).map(([k,v])=>{const l=C.filter(c=>c.k===k);return`<div class="card"><h3>${v.toUpperCase()} · ${l.filter(c=>mastered(c.cc)).length}/${l.length}</h3><div class="tiles">${l.map(c=>`<div class="tile ${mastered(c.cc)?'m':S.p[c.cc]?'l':''}" data-n="${c.name} — ${c.cap}">${c.f}</div>`).join('')}</div></div>`}).join('');show('map')};
+$('mapBody').onclick=e=>{if(e.target.dataset.n)$('mapName').textContent=e.target.dataset.n};
+$('mapHome').onclick=home;$('endHome').onclick=home;$('quit').onclick=()=>{clearInterval(G.tm);home()};
+// ---------- game
+let G={};
+function start(mode){
+  const pool=mode==='daily'?C:C.filter(c=>S.conts.includes(c.k));
+  G={mode,pool,score:0,streak:0,best:0,lives:3,n:0,ok:0,missed:[],recent:[],locked:false,left:60};
+  if(mode==='daily'){const r=mb(hash('ff'+today()));const a=[...C];for(let i=a.length-1;i>0;i--){const j=Math.floor(r()*(i+1));[a[i],a[j]]=[a[j],a[i]]}
+    const T=['flag','cap','type','flag','cap','type','flag','cap','type','flag'];G.qs=a.slice(0,10).map((c,i)=>makeQ(c,T[i],r,C));G.total=10}
+  $('hearts').style.display=mode==='daily'||mode==='blitz'?'none':'';
+  $('gbar').style.width='100%';show('game');
+  if(mode==='blitz'){G.tm=setInterval(()=>{G.left-=.1;$('gbar').style.width=Math.max(0,G.left/60*100)+'%';if(G.left<=0)end()},100)}
+  next()}
+function mult(){return Math.min(5,Math.floor(G.streak/3)+1)}
+function hud(){$('score').textContent=G.score;$('mult').textContent='x'+mult();$('hearts').textContent='❤️'.repeat(Math.max(0,G.lives))+'🖤'.repeat(Math.max(0,3-G.lives))}
+function next(){
+  if(G.mode==='daily'){if(G.n>=10)return end();G.q=G.qs[G.n];$('gbar').style.width=(10-G.n)/10*100+'%'}
+  else{const c=pick(G.pool,Math.random,G.recent);G.recent=[c.cc,...G.recent].slice(0,Math.min(6,G.pool.length-2));
+    G.q=makeQ(c,G.mode==='blitz'?'flag':G.mode,Math.random,G.pool)}
+  G.locked=false;const q=G.q;hud();$('msg').textContent='';$('ans').value='';
+  $('flag').textContent=q.c.f;$('cname').textContent=q.type==='cap'?q.c.name:'';
+  $('prompt').textContent=q.type==='cap'?'What is the capital of…':q.type==='type'?'Type the country name':'Which country is this?';
+  $('opts').style.display=q.type==='type'?'none':'grid';$('typeForm').style.display=q.type==='type'?'flex':'none';$('skip').style.display=q.type==='type'?'inline-block':'none';
+  $('opts').innerHTML=q.opts.map((o,i)=>`<button class="opt" data-cc="${o.cc}">${q.type==='cap'?o.cap:o.name}</button>`).join('');
+  if(q.type==='type')setTimeout(()=>$('ans').focus(),50)}
+$('opts').onclick=e=>{const b=e.target.closest('.opt');if(!b||G.locked)return;const ok=b.dataset.cc===G.q.c.cc;
+  document.querySelectorAll('.opt').forEach(x=>{x.disabled=true;if(x.dataset.cc===G.q.c.cc)x.classList.add('ok')});if(!ok)b.classList.add('no');resolve(ok,b)};
+$('typeForm').onsubmit=e=>{e.preventDefault();if(G.locked)return;const j=judge($('ans').value,G.q.c);
+  if(!$('ans').value.trim())return;$('msg').textContent=j===1?`Close enough! It's ${G.q.c.name}`:j?'':`It was ${G.q.c.name}`;resolve(j>0,$('ans'))};
+$('skip').onclick=()=>{if(G.locked)return;$('msg').textContent=`It was ${G.q.c.name}`;resolve(false,$('skip'))};
+addEventListener('keydown',e=>{if(!$('game').classList.contains('on')||G.locked)return;const i=+e.key-1;const o=document.querySelectorAll('.opt')[i];if(o&&$('opts').style.display!=='none')o.click()});
+function resolve(ok,el){
+  G.locked=true;G.n++;const c=G.q.c,p=S.p[c.cc]=S.p[c.cc]||{b:0,s:0};p.s++;
+  if(ok){p.b=Math.min(5,p.b+1);G.ok++;G.streak++;G.best=Math.max(G.best,G.streak);const pts=(G.q.type==='type'?150:100)*mult();G.score+=pts;float('+'+pts,el);sOk(mult());if(G.streak%5===0){confetti(70)}}
+  else{p.b=0;G.streak=0;G.missed.push(c);if(G.mode!=='blitz'&&G.mode!=='daily')G.lives--;sNo();if(G.q.type==='cap')$('msg').textContent=`${c.name}: ${c.cap}`;else if(!$('msg').textContent)$('msg').textContent=c.name;if(navigator.vibrate)navigator.vibrate(120)}
+  save();hud();
+  setTimeout(()=>{if(G.lives<=0)end();else if(G.mode==='blitz'&&G.left<=0){}else next()},ok?(G.mode==='blitz'?350:850):(G.mode==='blitz'?800:1700))}
+function float(t,el){const r=el.getBoundingClientRect(),d=document.createElement('div');d.className='fl';d.textContent=t;d.style.left=r.left+r.width/2-30+'px';d.style.top=r.top+'px';document.body.appendChild(d);setTimeout(()=>d.remove(),900)}
+function end(){
+  clearInterval(G.tm);const m=G.mode,hi=S.hi[m]||0,nh=G.score>hi;if(nh)S.hi[m]=G.score;
+  if(m==='daily'&&(!S.daily||S.daily.date!==today()||G.score>S.daily.score))S.daily={date:today(),score:G.score};save();
+  $('endT').textContent=m==='daily'?'DAILY DONE!':m==='blitz'?"TIME'S UP!":G.lives<=0?'GAME OVER':'NICE!';
+  $('endS').textContent=G.score;
+  $('endStats').innerHTML=`<div class="row"><span>Correct</span><span>${G.ok} / ${G.n}</span></div><div class="row"><span>Best streak</span><span>${G.best}</span></div><div class="row" style="border:0"><span>${nh?'🏆 New high score!':'High score'}</span><span>${S.hi[m]}</span></div>`;
+  $('endMiss').innerHTML=G.missed.length?[...new Map(G.missed.map(c=>[c.cc,c])).values()].map(c=>`<span>${c.f} ${c.name} · ${c.cap}</span>`).join(''):'<span>Perfect round! 🎉</span>';
+  $('again').onclick=()=>start(m==='daily'?'daily':m);show('end');if(nh||G.ok>=8){confetti(160);sWin()}}
+home();
+</script>
+</body>
+</html>
